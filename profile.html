@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>profile | カウチポテトofficial web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="site-logo"><a href="/"><img alt="カウチポテト" id="header-logo-img" /></a></div>
+            <nav class="global-nav desktop-nav">
+                <ul>
+                    <li><a href="/" class="active">HOME</a></li>
+                    <li><a href="/profile.html">profile</a></li>
+                    <li><a href="/live.html">live</a></li>
+                    <li><a href="/music.html" target="_blank">MUSIC</a></li>
+                    <li><a href="/onlineshop.html" target="_blank">GOODS</a></li>
+                </ul>
+            </nav>
+            <button class="hamburger-btn" id="hamburger-btn" aria-label="メニューを開く">
+                <svg viewBox="0 0 24 24" width="35" height="35" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="mobile-menu-overlay" id="mobile-menu">
+        <button class="close-btn" id="close-menu-btn" aria-label="メニューを閉じる">
+            <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <nav class="mobile-nav">
+            <ul>
+                <li><a href="/" class="active">HOME</a></li>
+                <li><a href="/profile.html">profile</a></li>
+                <li><a href="/live.html">live</a></li>
+                <li><a href="/music.html" target="_blank">MUSIC</a></li>
+                <li><a href="/onlineshop.html" target="_blank">GOODS</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <main class="main-content">
+        <section class="news-section">
+            <div class="section-title">
+                <h2>profile</h2>
+                <hr>
+            </div>
+            
+            <!-- JSがここにプロフィールを展開します -->
+            <div id="profile-container" class="post-content">
+                <p class="loading-text" style="text-align:center;">読込中...</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="page-top" id="scroll-to-top">
+            <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </div>
+        <p class="copyright">(C) couchpotato - allright reserved</p>
+    </footer>
+
+    <script type="module" src="main.js"></script>
+</body>
+</html>

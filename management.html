@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>管理画面 - カウチポテト</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+</head>
+<body>
+    <div id="loading-overlay"><div class="msg">画像挿入画面を読み込み中...</div></div>
+
+    <div class="admin-wrap">
+        <h1 class="admin-title">管理画面</h1>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('tab-post')" id="tab-btn-post">記事を書く</button>
+            <button class="tab-btn" onclick="switchTab('tab-manage'); loadAdminPosts();">記事の管理</button>
+            <button class="tab-btn" onclick="switchTab('tab-profile'); loadProfile();">プロフィール編集</button>
+            <button class="tab-btn" onclick="switchTab('tab-settings')">サイト設定</button>
+        </div>
+
+        <div id="tab-post">
+            <form id="news-form">
+                <input type="hidden" id="edit-post-id" value="">
+                
+                <div class="form-group">
+                    <label>投稿先</label>
+                    <label class="checkbox-label"><input type="checkbox" id="cat-news" value="news" checked> News (お知らせ)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="cat-live" value="live"> Live (スケジュール)</label>
+                </div>
+
+                <div class="form-group">
+                    <label>タイトル</label>
+                    <input type="text" id="news-title" required placeholder="例：ライブのお知らせ">
+                </div>
+                <div class="form-group">
+                    <label>タグ（キーワード）</label>
+                    <input type="text" id="news-tags" placeholder="例：ライブ, 音楽 （カンマ区切り）">
+                </div>
+
+                <div class="form-group">
+                    <label>投稿日時 (任意)</label>
+                    <input type="datetime-local" id="news-date">
+                    <p style="font-size:0.85em; color:var(--accent-color); margin-top:5px;">※空欄の場合は「現在の日時」で投稿されます。</p>
+                </div>
+                
+                <label style="display:block; margin-bottom:10px; font-weight:bold;">記事の内容（≡を掴んで上下に移動）</label>
+                <div id="blocks-container"></div>
+
+                <div class="add-btns">
+                    <button type="button" onclick="addBlock('text', '', 'blocks-container')">＋ 文章</button>
+                    <button type="button" onclick="addBlock('image', '', 'blocks-container')">＋ 画像</button>
+                    <button type="button" onclick="addBlock('youtube', '', 'blocks-container')">＋ YouTube</button>
+                    <button type="button" onclick="addBlock('twitter', '', 'blocks-container')">＋ X (Twitter)</button>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="submit-btn draft-btn" id="draft-post-btn">下書き保存</button>
+                    <button type="submit" class="submit-btn" id="submit-post-btn">サイトに公開する</button>
+                    <button type="button" class="submit-btn draft-btn" id="cancel-edit-btn" style="display:none;" onclick="cancelEdit()">編集キャンセル</button>
+                </div>
+                <p id="post-status" style="margin-top:20px; color: var(--link-color); font-weight:bold; display:none;"></p>
+            </form>
+        </div>
+
+        <div id="tab-manage" style="display: none;">
+            <p style="margin-bottom:20px;">過去の記事や下書きを修正・削除できます。</p>
+            <div id="admin-posts-list"><p>読み込み中...</p></div>
+        </div>
+
+        <div id="tab-profile" style="display: none;">
+            <p style="margin-bottom:20px;">プロフィールページの内容を配置します。</p>
+            <div id="blocks-container-profile"></div>
+            <div class="add-btns">
+                <button type="button" onclick="addBlock('text', '', 'blocks-container-profile')">＋ 文章</button>
+                <button type="button" onclick="addBlock('image', '', 'blocks-container-profile')">＋ 画像</button>
+                <button type="button" onclick="addBlock('youtube', '', 'blocks-container-profile')">＋ YouTube</button>
+                <button type="button" onclick="addBlock('twitter', '', 'blocks-container-profile')">＋ X (Twitter)</button>
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="saveProfile()" class="submit-btn">更新する</button>
+            </div>
+            <p id="profile-status" style="margin-top:20px; color: var(--link-color); font-weight:bold; display:none;">更新しました！</p>
+        </div>
+
+        <div id="tab-settings" style="display: none;">
+            <div class="setting-card">
+                <label style="font-weight:bold;">左上のヘッダーロゴ画像</label>
+                <button type="button" onclick="uploadSettingImage('headerLogo')" class="add-btns" style="padding:10px 20px; border-radius:30px; margin-top:10px;">画像を選ぶ</button>
+                <img id="preview-headerLogo" src="" style="max-height:60px; margin-top:10px; display:block;">
+                <input type="hidden" id="input-headerLogo">
+            </div>
+            <div class="setting-card">
+                <label style="font-weight:bold;">トップ画像 (HOME画面)</label>
+                <button type="button" onclick="uploadSettingImage('topImage')" class="add-btns" style="padding:10px 20px; border-radius:30px; margin-top:10px;">画像を選ぶ</button>
+                <img id="preview-topImage" src="" style="max-width:200px; display:block; margin-top:10px;">
+                <input type="hidden" id="input-topImage">
+            </div>
+            <div class="setting-card">
+                <label style="font-weight:bold;">タブアイコン (Favicon)</label>
+                <button type="button" onclick="uploadSettingImage('favicon')" class="add-btns" style="padding:10px 20px; border-radius:30px; margin-top:10px;">画像を選ぶ</button>
+                <img id="preview-favicon" src="" style="max-width:50px; margin-top:10px; display:block;">
+                <input type="hidden" id="input-favicon">
+            </div>
+            <div class="form-actions">
+                <button type="button" onclick="saveSettings()" class="submit-btn">設定を保存</button>
+            </div>
+            <p id="setting-status" style="margin-top:20px; color: var(--link-color); font-weight:bold; display:none;">保存しました！</p>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
