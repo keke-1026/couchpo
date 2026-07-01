@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const filteredDocs = snapshot.docs.filter(d => {
                 const data = d.data();
                 if(data.isDraft) return false;
+                if(data.isVisible === false) return false; // 非表示フラグの除外
                 const cats = data.categories || [];
                 return cats.includes("news") || cats.length === 0;
             });
@@ -115,7 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (liveContainer) {
         async function fetchLiveList() {
             const snapshot = await getDocs(query(collection(db, "news"), orderBy("createdAt", "desc")));
-            const filteredDocs = snapshot.docs.filter(d => !d.data().isDraft && (d.data().categories || []).includes("live"));
+            const filteredDocs = snapshot.docs.filter(d => {
+                const data = d.data();
+                if(data.isDraft) return false;
+                if(data.isVisible === false) return false; // 非表示フラグの除外
+                return (data.categories || []).includes("live");
+            });
 
             liveContainer.innerHTML = filteredDocs.length === 0 ? "<p>ライブの予定はまだありません。</p>" : "";
             let loadTwitterWidget = false;
@@ -147,20 +153,56 @@ document.addEventListener("DOMContentLoaded", () => {
             const docSnap = await getDoc(doc(db, "news", postId));
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                document.getElementById("page-title").textContent = `${data.title} | カウチポテト`; document.getElementById("post-title").textContent = data.title; document.getElementById("post-date").textContent = data.date;
-                const contentArea = document.getElementById("post-content"); const rendered = renderBlocks(data.blocks);
-                contentArea.innerHTML = rendered.html || `<div style="line-height: 1.8;">${(data.content||"").replace(/\n/g, "<br>")}</div>`;
-                if (rendered.hasTwitterEmbed) { const s = document.createElement("script"); s.src = "https://platform.twitter.com/widgets.js"; s.async = true; document.body.appendChild(s); }
+                document.getElementById("page-title").textContent = `${data.title} | カウチポテト`; 
+                document.getElementById("post-title").textContent = data.title; 
+                document.getElementById("post-date").textContent = data.date;
+                const contentArea = document.getElementById("post-content"); 
+                
+                // 記事本文を描画する関数
+                const renderPostContent = async () => {
+                    const rendered = renderBlocks(data.blocks);
+                    contentArea.innerHTML = rendered.html || `<div style="line-height: 1.8;">${(data.content||"").replace(/\n/g, "<br>")}</div>`;
+                    if (rendered.hasTwitterEmbed) { const s = document.createElement("script"); s.src = "https://platform.twitter.com/widgets.js"; s.async = true; document.body.appendChild(s); }
 
-                if (data.tags && data.tags.length > 0) {
-                    let tagsHtml = '<div class="tags-list">'; data.tags.forEach(tag => { tagsHtml += `<a href="search.html?tagsearch=${encodeURIComponent(tag)}"># ${tag}</a>`; });
-                    contentArea.insertAdjacentHTML('beforeend', tagsHtml + '</div>');
-                    const allDocs = await getDocs(query(collection(db, "news"), orderBy("createdAt", "desc")));
-                    const related = allDocs.docs.filter(d => !d.data().isDraft && d.id !== postId && (d.data().tags || []).includes(data.tags[0])).slice(0, 4);
-                    if (related.length > 0) {
-                        let relatedHtml = '<div class="related-posts"><h3>関連記事</h3><ul>'; related.forEach(rDoc => { relatedHtml += `<li><a href="post.html?id=${rDoc.id}">・ ${rDoc.data().title}</a></li>`; });
-                        contentArea.insertAdjacentHTML('beforeend', relatedHtml + '</ul></div>');
+                    if (data.tags && data.tags.length > 0) {
+                        let tagsHtml = '<div class="tags-list">'; data.tags.forEach(tag => { tagsHtml += `<a href="search.html?tagsearch=${encodeURIComponent(tag)}"># ${tag}</a>`; });
+                        contentArea.insertAdjacentHTML('beforeend', tagsHtml + '</div>');
+                        
+                        const allDocs = await getDocs(query(collection(db, "news"), orderBy("createdAt", "desc")));
+                        // 非表示記事は関連記事からも除外
+                        const related = allDocs.docs.filter(d => !d.data().isDraft && d.data().isVisible !== false && d.id !== postId && (d.data().tags || []).includes(data.tags[0])).slice(0, 4);
+                        if (related.length > 0) {
+                            let relatedHtml = '<div class="related-posts"><h3>関連記事</h3><ul>'; related.forEach(rDoc => { relatedHtml += `<li><a href="post.html?id=${rDoc.id}">・ ${rDoc.data().title}</a></li>`; });
+                            contentArea.insertAdjacentHTML('beforeend', relatedHtml + '</ul></div>');
+                        }
                     }
+                };
+
+                // パスワードの判定と表示の出し分け
+                const hasPassword = data.password && data.password.trim() !== "";
+                const urlPassword = new URLSearchParams(window.location.search).get('password');
+
+                if (hasPassword && urlPassword !== data.password) {
+                    // パスワード入力画面の表示
+                    contentArea.innerHTML = `
+                        <div class="password-auth-container">
+                            <h3>この記事はパスワードで保護されています</h3>
+                            <p class="password-error" id="pw-error">パスワードが違います</p>
+                            <input type="password" id="pw-input" placeholder="パスワードを入力">
+                            <button type="button" id="pw-submit">閲覧する</button>
+                        </div>
+                    `;
+                    document.getElementById('pw-submit').addEventListener('click', () => {
+                        const inputVal = document.getElementById('pw-input').value;
+                        if (inputVal === data.password) {
+                            renderPostContent();
+                        } else {
+                            document.getElementById('pw-error').style.display = 'block';
+                        }
+                    });
+                } else {
+                    // パスワードがない、またはURLパラメータで一致した場合は通常表示
+                    renderPostContent();
                 }
             }
         }
@@ -174,12 +216,15 @@ document.addEventListener("DOMContentLoaded", () => {
             const titleLabel = document.getElementById("search-title"); searchContainer.innerHTML = "";
             const snap = await getDocs(query(collection(db, "news"), orderBy("createdAt", "desc")));
             
+            // 非表示記事は検索結果からも除外
+            const visibleDocs = snap.docs.filter(d => !d.data().isDraft && d.data().isVisible !== false);
+
             if (tagQuery) {
                 titleLabel.innerHTML = `タグ: #${tagQuery}`;
-                displaySearch(snap.docs.filter(d => !d.data().isDraft && (d.data().tags || []).includes(tagQuery)));
+                displaySearch(visibleDocs.filter(d => (d.data().tags || []).includes(tagQuery)));
             } else if (textQuery) {
                 titleLabel.innerHTML = `検索: ${textQuery}`;
-                displaySearch(snap.docs.filter(d => !d.data().isDraft && (d.data().title || "").includes(textQuery)));
+                displaySearch(visibleDocs.filter(d => (d.data().title || "").includes(textQuery)));
             }
         }
         function displaySearch(docs) {

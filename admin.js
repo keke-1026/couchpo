@@ -106,19 +106,20 @@ if (newsForm) {
         const categories = [];
         if(document.getElementById("cat-news").checked) categories.push("news");
         if(document.getElementById("cat-live").checked) categories.push("live");
+        
         const isDraft = (submitAction === "draft");
+        const isVisible = document.getElementById("news-visible").checked;
+        const password = document.getElementById("news-password").value.trim();
 
         // --- 投稿日時の処理 ---
         const dateInput = document.getElementById("news-date").value;
         let finalDateStr = "";
-        let finalCreatedAt = new Date(); // 並び替え用の時間
+        let finalCreatedAt = new Date();
 
         if (dateInput) {
-            // カレンダーで指定された日時を使用
             finalCreatedAt = new Date(dateInput);
             finalDateStr = getFormattedDate(finalCreatedAt);
         } else {
-            // 空欄なら現在時刻を使用
             finalDateStr = getFormattedDate();
             finalCreatedAt = new Date();
         }
@@ -133,12 +134,13 @@ if (newsForm) {
 
         try {
             const statusMsg = document.getElementById("post-status");
+            const postData = { title, tags, categories, blocks, isDraft, isVisible, password, date: finalDateStr, createdAt: finalCreatedAt };
+
             if (editId) {
-                // 編集時も任意の日時と並び順を更新する
-                await setDoc(doc(db, "news", editId), { title, tags, categories, blocks, isDraft, date: finalDateStr, createdAt: finalCreatedAt }, { merge: true });
+                await setDoc(doc(db, "news", editId), postData, { merge: true });
                 statusMsg.textContent = isDraft ? "下書きとして保存しました！" : "編集を完了し公開しました！";
             } else {
-                await addDoc(collection(db, "news"), { title, date: finalDateStr, tags, categories, blocks, isDraft, createdAt: finalCreatedAt });
+                await addDoc(collection(db, "news"), postData);
                 statusMsg.textContent = isDraft ? "下書きとして保存しました！" : "新しく公開しました！";
                 document.getElementById("news-form").reset(); document.getElementById('blocks-container').innerHTML = "";
             }
@@ -157,8 +159,27 @@ window.loadAdminPosts = async function() {
     snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const catStr = (data.categories || []).join(' / ') || 'news';
-        const draftMark = data.isDraft ? '<span style="color:#cc3333; font-weight:bold; margin-right:5px;">[下書き]</span>' : '';
-        listArea.insertAdjacentHTML('beforeend', `<div class="manage-list-item"><div><span>${draftMark}${data.title}</span><br><small style="color:var(--accent-color);">${data.date} [${catStr}]</small></div><div class="manage-actions"><button type="button" class="btn-edit" onclick="editPost('${docSnap.id}')">編集</button><button type="button" class="btn-delete" onclick="deletePost('${docSnap.id}', '${data.title}')">削除</button></div></div>`);
+        let statusMark = "";
+        if (data.isDraft) statusMark += '<span style="color:#cc3333; font-weight:bold; margin-right:5px;">[下書き]</span>';
+        if (data.isVisible === false) statusMark += '<span style="color:#909f78; font-weight:bold; margin-right:5px;">[非表示]</span>';
+        if (data.password) statusMark += '<span style="color:#a79d8a; font-weight:bold; margin-right:5px;">[ロック]</span>';
+
+        // 記事のフルURLを生成
+        const postUrl = `${window.location.origin}/post.html?id=${docSnap.id}`;
+
+        listArea.insertAdjacentHTML('beforeend', `
+            <div class="manage-list-item">
+                <div>
+                    <span>${statusMark}${data.title}</span><br>
+                    <small style="color:var(--accent-color);">${data.date} [${catStr}]</small><br>
+                    <small style="color:var(--accent-color);">URL: <a href="${postUrl}" target="_blank" style="color:var(--link-color); text-decoration:underline; word-break:break-all;">${postUrl}</a></small>
+                </div>
+                <div class="manage-actions">
+                    <button type="button" class="btn-edit" onclick="editPost('${docSnap.id}')">編集</button>
+                    <button type="button" class="btn-delete" onclick="deletePost('${docSnap.id}', '${data.title}')">削除</button>
+                </div>
+            </div>
+        `);
     });
 }
 
@@ -173,9 +194,11 @@ window.editPost = async function(id) {
         document.getElementById("cat-news").checked = data.categories ? data.categories.includes("news") : true;
         document.getElementById("cat-live").checked = data.categories ? data.categories.includes("live") : false;
         
-        // --- 保存されていた時間をカレンダー入力欄に復元 ---
+        // 追加機能の復元
+        document.getElementById("news-visible").checked = data.isVisible !== false; // 過去記事などで未定義の場合はtrueとする
+        document.getElementById("news-password").value = data.password || "";
+
         if (data.date) {
-            // "2026.07.01 12:00:00" のような文字列を "2026-07-01T12:00" に変換してセット
             document.getElementById("news-date").value = data.date.replace(/\./g, '-').replace(' ', 'T').substring(0, 16);
         } else {
             document.getElementById("news-date").value = "";
@@ -189,14 +212,14 @@ window.editPost = async function(id) {
 window.cancelEdit = function() {
     document.getElementById("edit-post-id").value = ""; 
     document.getElementById("news-form").reset(); 
-    document.getElementById("news-date").value = ""; // 日付もリセット
+    document.getElementById("news-date").value = ""; 
+    document.getElementById("news-visible").checked = true;
+    document.getElementById("news-password").value = "";
     document.getElementById('blocks-container').innerHTML = ""; 
     document.getElementById("submit-post-btn").textContent = "サイトに公開する"; 
     document.getElementById("cancel-edit-btn").style.display = "none"; 
     document.getElementById("tab-btn-post").textContent = "記事を書く";
 }
-
-// （※この下の「プロフィール編集処理」「サイト設定処理」は元のままで大丈夫です）
 
 // === プロフィール編集処理 ===
 window.loadProfile = async function() {

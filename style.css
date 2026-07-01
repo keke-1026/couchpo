@@ -137,8 +137,8 @@ a:hover {
 
 .form-group { margin-bottom: 40px; }
 .form-group label { display: block; margin-bottom: 10px; font-size: 1.1em; font-weight: bold; }
-.form-group input[type="text"], .form-group input[type="date"] { width: 100%; padding: 10px 0; border: none; border-bottom: 1px solid var(--border-color); background: transparent; font-size: 16px; color: var(--text-color); outline: none; transition: 0.3s; }
-.form-group input[type="text"]:focus { border-bottom-color: var(--text-color); }
+.form-group input[type="text"], .form-group input[type="date"], .form-group input[type="datetime-local"] { width: 100%; padding: 10px 0; border: none; border-bottom: 1px solid var(--border-color); background: transparent; font-size: 16px; color: var(--text-color); outline: none; transition: 0.3s; }
+.form-group input[type="text"]:focus, .form-group input[type="datetime-local"]:focus { border-bottom-color: var(--text-color); }
 
 .checkbox-label { display: inline-flex; align-items: center; margin-right: 20px; cursor: pointer; font-size: 1em; }
 .checkbox-label input { margin-right: 8px; width: 18px; height: 18px; cursor: pointer; accent-color: var(--text-color); }
@@ -147,12 +147,10 @@ a:hover {
 .editor-block.over { border-left: 3px dashed var(--text-color); opacity: 0.5; }
 .drag-handle { cursor: grab; font-size: 1.5em; color: var(--border-color); position: absolute; left: 0; top: 10px; padding: 5px; margin-left: -5px; touch-action: none; }
 
-/* 文章入力スペースを広げるための変更（min-heightを200pxに拡張） */
 .editor-block textarea, .editor-block input[type="text"] { width: 100%; min-height: 200px; border: 1px solid var(--border-color); padding: 12px; outline: none; font-size: 16px; resize: vertical; margin-top: 10px; border-radius: 4px; font-family: inherit; background: #fff; box-sizing: border-box; }
 .editor-block input[type="text"] { min-height: auto; }
 .editor-block img { max-width: 100%; border-radius: 4px; margin-top: 10px; }
 
-/* スマホ向けに↑↓ボタンを追加したためのスタイル調整 */
 .block-controls { position: absolute; top: 5px; right: 0; display: flex; gap: 10px; }
 .block-controls button { background: transparent; color: var(--text-color); border: none; cursor: pointer; font-size: 1.1em; font-weight: bold; padding: 5px; }
 
@@ -178,7 +176,19 @@ a:hover {
 
 
 /* ==================================================
-   6. レスポンシブ (スマホ対応)
+   6. パスワード保護画面
+================================================== */
+.password-auth-container { text-align: center; margin: 40px auto; max-width: 400px; padding: 40px 20px; background: #fff; border-radius: 8px; border: 1px solid var(--border-color); }
+.password-auth-container h3 { margin-bottom: 20px; font-weight: normal; font-size: 1.1em; letter-spacing: 1px; }
+.password-auth-container input[type="password"] { width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 16px; outline: none; box-sizing: border-box; font-family: inherit; }
+.password-auth-container input[type="password"]:focus { border-color: var(--text-color); }
+.password-auth-container button { width: 100%; padding: 15px; background-color: var(--text-color); color: #fff; border: none; border-radius: 30px; font-size: 1em; cursor: pointer; transition: 0.3s; font-family: inherit; font-weight: bold; }
+.password-auth-container button:hover { opacity: 0.8; }
+.password-error { color: #cc3333; margin-bottom: 15px; font-size: 0.9em; display: none; font-weight: bold; }
+
+
+/* ==================================================
+   7. レスポンシブ (スマホ対応)
 ================================================== */
 @media screen and (max-width: 768px) {
     /* サイト共通 */

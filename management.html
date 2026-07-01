@@ -33,12 +33,23 @@
                 </div>
 
                 <div class="form-group">
+                    <label>一覧への表示</label>
+                    <label class="checkbox-label"><input type="checkbox" id="news-visible" checked> NEWSやLIVEの一覧に表示する</label>
+                    <p style="font-size:0.85em; color:var(--accent-color); margin-top:5px;">※チェックを外すと一覧には表示されず、URLを知っている人のみアクセスできる限定公開になります。</p>
+                </div>
+
+                <div class="form-group">
                     <label>タイトル</label>
                     <input type="text" id="news-title" required placeholder="例：ライブのお知らせ">
                 </div>
                 <div class="form-group">
                     <label>タグ（キーワード）</label>
                     <input type="text" id="news-tags" placeholder="例：ライブ, 音楽 （カンマ区切り）">
+                </div>
+
+                <div class="form-group">
+                    <label>閲覧パスワード (任意)</label>
+                    <input type="text" id="news-password" placeholder="例：secret123 (空欄の場合はパスワードなし)">
                 </div>
 
                 <div class="form-group">
