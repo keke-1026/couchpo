@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>管理画面 - カウチポテト</title>
+    <title>管理画面</title>
     
     <link rel="stylesheet" href="style.css">
     
@@ -44,12 +44,12 @@
                 </div>
                 <div class="form-group">
                     <label>タグ（キーワード）</label>
-                    <input type="text" id="news-tags" placeholder="例：ライブ, 音楽 （カンマ区切り）">
+                    <input type="text" id="news-tags" placeholder="例：ライブ, 音楽">
                 </div>
 
                 <div class="form-group">
                     <label>閲覧パスワード (任意)</label>
-                    <input type="text" id="news-password" placeholder="例：secret123 (空欄の場合はパスワードなし)">
+                    <input type="text" id="news-password" placeholder="(空欄の場合はパスワードなし)">
                 </div>
 
                 <div class="form-group">
@@ -58,7 +58,7 @@
                     <p style="font-size:0.85em; color:var(--accent-color); margin-top:5px;">※空欄の場合は「現在の日時」で投稿されます。</p>
                 </div>
                 
-                <label style="display:block; margin-bottom:10px; font-weight:bold;">記事の内容（≡を掴んで上下に移動）</label>
+                <label style="display:block; margin-bottom:10px; font-weight:bold;">記事の内容（HTMLタグが使用可能です｡詳しくは<a href="https://hmaster.net/htmllist.html" target="_blank"><span style="color: #0099cc;">こちら</span></a>を参照してください｡）</label>
                 <div id="blocks-container"></div>
 
                 <div class="add-btns">

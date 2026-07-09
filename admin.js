@@ -8,7 +8,6 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
-// === タブ切り替え処理 ===
 window.switchTab = function(tabId) {
     ['tab-post', 'tab-manage', 'tab-profile', 'tab-settings'].forEach(id => document.getElementById(id).style.display = 'none');
     document.getElementById(tabId).style.display = 'block';
@@ -16,7 +15,6 @@ window.switchTab = function(tabId) {
     event.target.classList.add('active');
 }
 
-// === ドラッグ＆ドロップ処理 ===
 let draggedItem = null;
 function handleDragStart(e) { draggedItem = this; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/html', this.innerHTML); this.style.opacity = '0.5'; }
 function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; return false; }
@@ -34,7 +32,6 @@ function handleDrop(e) {
 }
 function handleDragEnd(e) { this.style.opacity = '1'; this.parentElement.querySelectorAll('.editor-block').forEach(item => item.classList.remove('over')); }
 
-// === スマホ向け：タップで上下移動する処理 ===
 window.moveBlockUp = function(btn) {
     const block = btn.closest('.editor-block');
     if (block.previousElementSibling) {
@@ -48,7 +45,6 @@ window.moveBlockDown = function(btn) {
     }
 }
 
-// === ブロック追加処理 ===
 window.addBlock = function(type, content = "", targetId = 'blocks-container') {
     const container = document.getElementById(targetId);
     const div = document.createElement('div');
@@ -57,7 +53,6 @@ window.addBlock = function(type, content = "", targetId = 'blocks-container') {
     div.addEventListener('dragover', handleDragOver, false); div.addEventListener('dragleave', handleDragLeave, false);
     div.addEventListener('drop', handleDrop, false); div.addEventListener('dragend', handleDragEnd, false);
     
-    // ↑ ↓ ボタンを追加
     let inner = `<span class="drag-handle">≡</span>
                  <div class="block-controls">
                     <button type="button" onclick="moveBlockUp(this)" title="上へ移動">↑</button>
@@ -82,7 +77,6 @@ window.addBlock = function(type, content = "", targetId = 'blocks-container') {
     }
 }
 
-// === 記事の保存（公開 / 下書き）処理 ===
 let submitAction = "published";
 const draftBtn = document.getElementById("draft-post-btn");
 const submitBtn = document.getElementById("submit-post-btn");
@@ -90,7 +84,6 @@ const submitBtn = document.getElementById("submit-post-btn");
 if (draftBtn) draftBtn.addEventListener("click", () => submitAction = "draft");
 if (submitBtn) submitBtn.addEventListener("click", () => submitAction = "published");
 
-// 日付表示用のフォーマット関数
 function getFormattedDate(dateObj = new Date()) {
     const pad = (n) => n.toString().padStart(2, '0');
     return `${dateObj.getFullYear()}.${pad(dateObj.getMonth()+1)}.${pad(dateObj.getDate())} ${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:00`;
@@ -111,7 +104,6 @@ if (newsForm) {
         const isVisible = document.getElementById("news-visible").checked;
         const password = document.getElementById("news-password").value.trim();
 
-        // --- 投稿日時の処理 ---
         const dateInput = document.getElementById("news-date").value;
         let finalDateStr = "";
         let finalCreatedAt = new Date();
@@ -149,7 +141,6 @@ if (newsForm) {
     });
 }
 
-// === 記事の管理・編集処理 ===
 window.loadAdminPosts = async function() {
     const listArea = document.getElementById('admin-posts-list');
     listArea.innerHTML = "読み込み中...";
@@ -164,7 +155,6 @@ window.loadAdminPosts = async function() {
         if (data.isVisible === false) statusMark += '<span style="color:#909f78; font-weight:bold; margin-right:5px;">[非表示]</span>';
         if (data.password) statusMark += '<span style="color:#a79d8a; font-weight:bold; margin-right:5px;">[ロック]</span>';
 
-        // 記事のフルURLを生成
         const postUrl = `${window.location.origin}/post.html?id=${docSnap.id}`;
 
         listArea.insertAdjacentHTML('beforeend', `
@@ -194,8 +184,7 @@ window.editPost = async function(id) {
         document.getElementById("cat-news").checked = data.categories ? data.categories.includes("news") : true;
         document.getElementById("cat-live").checked = data.categories ? data.categories.includes("live") : false;
         
-        // 追加機能の復元
-        document.getElementById("news-visible").checked = data.isVisible !== false; // 過去記事などで未定義の場合はtrueとする
+        document.getElementById("news-visible").checked = data.isVisible !== false;
         document.getElementById("news-password").value = data.password || "";
 
         if (data.date) {
@@ -221,7 +210,6 @@ window.cancelEdit = function() {
     document.getElementById("tab-btn-post").textContent = "記事を書く";
 }
 
-// === プロフィール編集処理 ===
 window.loadProfile = async function() {
     const container = document.getElementById('blocks-container-profile'); container.innerHTML = "";
     const snap = await getDoc(doc(db, "pages", "profile"));
@@ -239,7 +227,6 @@ window.saveProfile = async function() {
     const s = document.getElementById("profile-status"); s.style.display = "block"; setTimeout(() => { s.style.display = "none"; }, 3000);
 }
 
-// === サイト設定処理 ===
 async function loadSettings() {
     const snap = await getDoc(doc(db, "settings", "global"));
     if(snap.exists()){

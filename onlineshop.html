@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>転送中 - couchpotato-hp</title>
+    <title>オンラインショップ へ 転送中 - カウチポテト</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Noto Sans JP', sans-serif;
-            background: #ffffff;
+            background: #f6eede;
             color: #1f2937;
             margin: 0;
             display: flex;
@@ -65,23 +65,18 @@
         let finalUrl = baseUrl;
 
         if (data) {
-            // 末尾にスラッシュ、途中にドット（拡張子）、またはスラッシュ（階層）が含まれるか判定
             const hasExtension = data.includes('.');
             const hasPath = data.includes('/');
 
             if (hasExtension || hasPath) {
-                // daisuke.net/index.html のようなフル構成や、サブフォルダ指定の場合
                 finalUrl += data;
             } else {
-                // flightradar24modoki のようなシンプルなタグの場合、.htmlを付与
                 finalUrl += data + ".html";
             }
         }
 
-        // 画面に転送先を表示（ロマン用）
         document.getElementById('display-path').innerText = finalUrl.replace("https://", "");
 
-        // わずかなディレイの後に転送（即時転送なら 0 に変更可能）
         setTimeout(() => {
             window.location.replace(finalUrl);
         }, 800);
